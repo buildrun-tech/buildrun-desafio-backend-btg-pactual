@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.Fields;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 import tech.buildrun.btgpactual.entity.OrderEntity;
@@ -55,15 +54,11 @@ public class OrderService {
         orderRepository.save(entity);
     }
 
-    public Page<OrderEntity> findAll(PageRequest pageRequest) {
-        return orderRepository.findAll(pageRequest);
-    }
-
     public Page<OrderEntity> findAllByCustomer(Long customerId, PageRequest pageRequest) {
         return orderRepository.findAllByCustomerId(customerId, pageRequest);
     }
 
-    public BigDecimal sumTotalInOrdersByCustomer(Long customerId) {
+    public BigDecimal sumTotalOnOrdersByCustomer(Long customerId) {
         Aggregation aggregation = newAggregation(
                 match(Criteria.where("customerId").is(customerId)),
                 group().sum("total").as("total")

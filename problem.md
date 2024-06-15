@@ -12,11 +12,9 @@
 7. A aplicação deve ser entregue “rodando”, com instruções para interagir com ela.
 8. Recomendamos a utilização do Docker (http://www.docker.com) para montagem do ambiente (MongoDb, RabbitMQ, Web Application, etc.)
    Caso opte pela utilização do Docker, crie uma única imagem com todos os containers e compartilhe em seu relatório final.
-   
 
 ## Escopo
 Processar pedidos e gerar relatório.
-   
 
 ## Atividades
 1. Elabore e entregue um plano de trabalho.

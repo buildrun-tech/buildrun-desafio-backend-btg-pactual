@@ -1,5 +1,5 @@
 <p align="center" width="100%">
-    <img width="50%" src="https://github.com/buildrun-tech/buildrun-desafio-backend-picpay/blob/main/images/btg-logo.jpg"> 
+    <img width="50%" src="https://github.com/buildrun-tech/buildrun-desafio-backend-btg-pactual/blob/main/images/btg-logo.jpg"> 
 </p>
 
 

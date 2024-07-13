@@ -15,7 +15,6 @@ class OrderResponseTest {
     @Nested
     class FromEntity {
 
-
         @Test
         void shouldMapCorrectly() {
 

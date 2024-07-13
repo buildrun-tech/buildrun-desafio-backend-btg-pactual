@@ -8,14 +8,12 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatusCode;
-import tech.buildrun.btgpactual.orderms.controller.dto.OrderResponse;
+import tech.buildrun.btgpactual.orderms.factory.OrderResponseFactory;
 import tech.buildrun.btgpactual.orderms.service.OrderService;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,69 +31,85 @@ class OrderControllerTest {
     OrderController orderController;
 
     @Captor
-    ArgumentCaptor<Long> orderIdCaptor;
+    ArgumentCaptor<Long> customerIdCaptor;
+
+    @Captor
+    ArgumentCaptor<PageRequest> pageRequestCaptor;
 
     @Nested
     class ListOrders {
 
         @Test
-        void shouldReturnOk() {
-            // ARRANGE
-            var page = new PageImpl<>(new ArrayList<>());
-            doReturn(page).when(orderService).findAllByCustomerId(anyLong(), any());
-            doReturn(BigDecimal.valueOf(200.)).when(orderService).findTotalOnOrdersByCustomerId(anyLong());
+        void shouldReturnHttpOk() {
+            // ARRANGE - prepara todos os mocks para a execucao
+            var customerId = 1L;
+            var page = 0;
+            var pageSize = 10;
+            doReturn(OrderResponseFactory.buildWithOneItem())
+                    .when(orderService).findAllByCustomerId(anyLong(), any());
+            doReturn(BigDecimal.valueOf(20.50))
+                    .when(orderService).findTotalOnOrdersByCustomerId(anyLong());
 
-            // ACT
-            var response = orderController.listOrders(1L, 0, 1);
+            // ACT - executar o metodo a ser testado
+            var response = orderController.listOrders(customerId, page, pageSize);
 
-            // ASSERT
+            // ASSERT - verifica se a execucao foi certinha
             assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
         }
 
         @Test
-        void shouldPassParametersCorrectly() {
-            // ARRANGE
-            long orderId = 1L;
-            var page = new PageImpl<>(new ArrayList<>());
-            doReturn(page).when(orderService).findAllByCustomerId(orderIdCaptor.capture(), any());
-            doReturn(BigDecimal.valueOf(200.)).when(orderService).findTotalOnOrdersByCustomerId(orderIdCaptor.capture());
+        void shouldPassCorrectParamtersToService() {
+            // ARRANGE - prepara todos os mocks para a execucao
+            var customerId = 1L;
+            var page = 0;
+            var pageSize = 10;
+            doReturn(OrderResponseFactory.buildWithOneItem())
+                    .when(orderService).findAllByCustomerId(customerIdCaptor.capture(), pageRequestCaptor.capture());
+            doReturn(BigDecimal.valueOf(20.50))
+                    .when(orderService).findTotalOnOrdersByCustomerId(customerIdCaptor.capture());
 
-            // ACT
-            var response = orderController.listOrders(orderId, 0, 1);
+            // ACT - executar o metodo a ser testado
+            var response = orderController.listOrders(customerId, page, pageSize);
 
-            // ASSERT
-            assertEquals(2, orderIdCaptor.getAllValues().size());
-            assertEquals(orderId, orderIdCaptor.getAllValues().get(0));
-            assertEquals(orderId, orderIdCaptor.getAllValues().get(1));
+            // ASSERT - verifica se a execucao foi certinha
+            assertEquals(2, customerIdCaptor.getAllValues().size());
+            assertEquals(customerId, customerIdCaptor.getAllValues().get(0));
+            assertEquals(customerId, customerIdCaptor.getAllValues().get(1));
+            assertEquals(page, pageRequestCaptor.getValue().getPageNumber());
+            assertEquals(pageSize, pageRequestCaptor.getValue().getPageSize());
         }
 
         @Test
         void shouldReturnResponseBodyCorrectly() {
-            // ARRANGE
-            long orderId = 1L;
-            BigDecimal totalOrders = BigDecimal.valueOf(200.);
-            var page = new PageImpl<>(List.of(new OrderResponse(1L, 1L, totalOrders)));
+            // ARRANGE - prepara todos os mocks para a execucao
+            var customerId = 1L;
+            var page = 0;
+            var pageSize = 10;
+            var totalOnOrders = BigDecimal.valueOf(20.50);
+            var pagination = OrderResponseFactory.buildWithOneItem();
+            doReturn(pagination)
+                    .when(orderService).findAllByCustomerId(anyLong(), any());
+            doReturn(totalOnOrders)
+                    .when(orderService).findTotalOnOrdersByCustomerId(anyLong());
 
-            doReturn(page).when(orderService).findAllByCustomerId(orderIdCaptor.capture(), any());
-            doReturn(totalOrders).when(orderService).findTotalOnOrdersByCustomerId(orderIdCaptor.capture());
+            // ACT - executar o metodo a ser testado
+            var response = orderController.listOrders(customerId, page, pageSize);
 
-            // ACT
-            var response = orderController.listOrders(orderId, 0, 1);
-
-            // ASSERT
+            // ASSERT - verifica se a execucao foi certinha
+            assertNotNull(response);
             assertNotNull(response.getBody());
+            assertNotNull(response.getBody().data());
             assertNotNull(response.getBody().pagination());
             assertNotNull(response.getBody().summary());
-            assertNotNull(response.getBody().data());
 
-            assertEquals(totalOrders, response.getBody().summary().get("totalOnOrders"));
+            assertEquals(totalOnOrders, response.getBody().summary().get("totalOnOrders"));
 
-            assertEquals(page.getNumber(), response.getBody().pagination().page());
-            assertEquals(page.getSize(), response.getBody().pagination().pageSize());
-            assertEquals(page.getTotalPages(), response.getBody().pagination().totalPages());
-            assertEquals(page.getTotalElements(), response.getBody().pagination().totalElements());
+            assertEquals(pagination.getTotalElements(), response.getBody().pagination().totalElements());
+            assertEquals(pagination.getTotalPages(), response.getBody().pagination().totalPages());
+            assertEquals(pagination.getNumber(), response.getBody().pagination().page());
+            assertEquals(pagination.getSize(), response.getBody().pagination().pageSize());
 
-            assertEquals(page.getContent(), response.getBody().data());
+            assertEquals(pagination.getContent(), response.getBody().data());
         }
     }
 

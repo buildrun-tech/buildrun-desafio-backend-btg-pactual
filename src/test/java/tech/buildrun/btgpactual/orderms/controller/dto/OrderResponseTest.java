@@ -2,11 +2,7 @@ package tech.buildrun.btgpactual.orderms.controller.dto;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import tech.buildrun.btgpactual.orderms.entity.OrderEntity;
-import tech.buildrun.btgpactual.orderms.entity.OrderItem;
-
-import java.math.BigDecimal;
-import java.util.List;
+import tech.buildrun.btgpactual.orderms.factory.OrderEntityFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,15 +13,8 @@ class OrderResponseTest {
 
         @Test
         void shouldMapCorrectly() {
-
             // ARRANGE
-            var items = new OrderItem("notebook", 1, BigDecimal.valueOf(20.50));
-
-            var input = new OrderEntity();
-            input.setOrderId(1L);
-            input.setCustomerId(2L);
-            input.setTotal(BigDecimal.valueOf(20.50));
-            input.setItems(List.of(items));
+            var input = OrderEntityFactory.build();
 
             // ACT
             var output = OrderResponse.fromEntity(input);
@@ -36,4 +25,5 @@ class OrderResponseTest {
             assertEquals(input.getTotal(), output.total());
         }
     }
+
 }

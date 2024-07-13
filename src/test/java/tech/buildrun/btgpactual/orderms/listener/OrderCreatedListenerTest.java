@@ -7,12 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.support.MessageBuilder;
-import tech.buildrun.btgpactual.orderms.listener.dto.OrderCreatedEvent;
-import tech.buildrun.btgpactual.orderms.listener.dto.OrderItemEvent;
+import tech.buildrun.btgpactual.orderms.factory.OrderCreatedEventFactory;
 import tech.buildrun.btgpactual.orderms.service.OrderService;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -31,11 +27,10 @@ class OrderCreatedListenerTest {
     class Listen {
 
         @Test
-        void shouldCallServiceWhenConsumeTheMessage() {
+        void shouldCallServiceWithCorrectParameters() {
 
             // ARRANGE
-            var itens = new OrderItemEvent("notebook", 1, BigDecimal.valueOf(20.50));
-            var event = new OrderCreatedEvent(1L, 2L, List.of(itens));
+            var event = OrderCreatedEventFactory.buildWithOneItem();
             var message = MessageBuilder.withPayload(event).build();
 
             // ACT
@@ -44,6 +39,6 @@ class OrderCreatedListenerTest {
             // ASSERT
             verify(orderService, times(1)).save(eq(message.getPayload()));
         }
-
     }
+
 }
